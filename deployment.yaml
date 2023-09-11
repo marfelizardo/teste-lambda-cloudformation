@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "Demontracao de Cloudformation"
+
+Parameters: 
+  Ambiente:
+    Description: Nome do ambiente
+    Type: String
+
+Resources: 
+
+  funcaoLambdaIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "teste-lambda-cloudformation-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "logs:DescribeLogStreams"
+                Resource: "*"
+
+  lambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: "Lambda para Demontracao de Cloudformation"
+      FunctionName: !Sub teste-lambda-cloudformation${Ambiente}
+      Handler: helloworld.App::handleRequest
+      MemorySize: 128
+      Role: !GetAtt funcaoLambdaIamRole.Arn
+      Runtime: java8
+      Timeout: 30
+      Environment:
+        Variables:
+          key1: value1 # A map of key-value pairs that the Lambda function can access
+      Code:
+        S3Bucket: teste-lambda-cloudformation-pacotes
+        S3Key: arquivoLambda.zip
+      Tags:
+        - Key: keyname
+          Value: value
